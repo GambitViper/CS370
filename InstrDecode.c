@@ -31,9 +31,9 @@ void HexToBinary(int *bits, unsigned int hex){
     }
 }
 
-void ReverseArray(int *bits, int len){
+void ReverseArray(int *arr, int len){
   int start = 0, end = len - 1;
-  ReverseArrayHelper(bits, start, end);
+  ReverseArrayHelper(arr, start, end);
 }
 
 void ReverseArrayHelper(int *arr, int start, int end){
