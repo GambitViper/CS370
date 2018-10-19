@@ -2,8 +2,9 @@
 #include <stdlib.h>
 
 void HexToBinary(int *, unsigned int);
-void ReverseArray(int [], int);
-void ReverseArrayHelper(int [], int, int);
+void ReverseArray(int *, int);
+void ReverseArrayHelper(int *, int, int);
+void Dissassemble(int *);
 
 int main() {
 
@@ -12,17 +13,36 @@ int main() {
 
     fp = fopen("trace.txt", "r");
     while (fscanf(fp, "%X", &hex) != EOF){
-        int *bits;
-        bits = (int *) malloc(32 * sizeof(int));
-        HexToBinary(bits, hex);
-        ReverseArray(bits, 32);
+        //PC address bits
+        printf("PC~~~");
+        int *pc_bits;
+        pc_bits = (int *) malloc(32 * sizeof(int));
+        HexToBinary(pc_bits, hex);
+        ReverseArray(pc_bits, 32);
         for(int i = 0; i < 32; ++i){
-            printf("%d", bits[i]);
+            printf("%d", pc_bits[i]);
         }
+
+        //Instruction MIPS encoded bits
+        printf("\n~~~INSTR~~~");
+        int *instr_bits;
+        instr_bits = (int *) malloc(32 * sizeof(int));
+        fscanf(fp, "%X", &hex);
+        HexToBinary(instr_bits, hex);
+        ReverseArray(instr_bits, 32);
+        for(int i = 0; i < 32; ++i){
+            printf("%d", instr_bits[i]);
+        }
+        //Dissassemble(instr_bits);
         printf("\n");
     }
 
     return 0;
+}
+
+void Dissassemble(int *bits){
+  //char opcode[];
+  //for(int )
 }
 
 void HexToBinary(int *bits, unsigned int hex){
