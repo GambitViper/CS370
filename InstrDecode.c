@@ -6,20 +6,19 @@ void HexToBinary(int *, unsigned int);
 int main() {
 
     FILE *fp;
-    char line[255];
+    unsigned int hex;
 
     fp = fopen("trace.txt", "r");
-    while (fscanf(fp, "%s", line) != EOF){
-        unsigned int num = (unsigned int) strtol(line, NULL, 16);
+    while (fscanf(fp, "%X", &hex) != EOF){
         int *bits;
         bits = (int *) malloc(32 * sizeof(int));
-        HexToBinary(bits, num);
+        HexToBinary(bits, hex);
         for(int i = 0; i < 32; ++i){
             printf("%d", bits[i]);
         }
         printf("\n");
     }
-    
+
     return 0;
 }
 
