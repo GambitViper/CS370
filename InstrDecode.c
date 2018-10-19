@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 void HexToBinary(int *, unsigned int);
-void ReverseArray(int []);
+void ReverseArray(int [], int);
 void ReverseArrayHelper(int [], int, int);
 
 int main() {
@@ -15,7 +15,7 @@ int main() {
         int *bits;
         bits = (int *) malloc(32 * sizeof(int));
         HexToBinary(bits, hex);
-        ReverseArray(bits);
+        ReverseArray(bits, 32);
         for(int i = 0; i < 32; ++i){
             printf("%d", bits[i]);
         }
@@ -31,8 +31,7 @@ void HexToBinary(int *bits, unsigned int hex){
     }
 }
 
-void ReverseArray(int *bits){
-  int len = sizeof(&bits) / sizeof(int);
+void ReverseArray(int *bits, int len){
   int start = 0, end = len - 1;
   ReverseArrayHelper(bits, start, end);
 }
