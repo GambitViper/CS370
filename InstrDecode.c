@@ -13,13 +13,15 @@ int main() {
 
     fp = fopen("trace.txt", "r");
     while (fscanf(fp, "%X", &hex) != EOF){
+
         //PC address bits
-        printf("PC~~~");
+        printf("~~~~~PC~~~~");
         int *pc_bits;
         pc_bits = (int *) malloc(32 * sizeof(int));
         HexToBinary(pc_bits, hex);
         ReverseArray(pc_bits, 32);
-        for(int i = 0; i < 32; ++i){
+        int i;
+        for(i = 0; i < 32; ++i){
             printf("%d", pc_bits[i]);
         }
 
@@ -30,10 +32,11 @@ int main() {
         fscanf(fp, "%X", &hex);
         HexToBinary(instr_bits, hex);
         ReverseArray(instr_bits, 32);
-        for(int i = 0; i < 32; ++i){
-            printf("%d", instr_bits[i]);
+        int j;
+        for(j = 0; j < 32; ++j){
+            printf("%d", instr_bits[j]);
         }
-        //Dissassemble(instr_bits);
+        Dissassemble(instr_bits);
         printf("\n");
     }
 
@@ -41,12 +44,19 @@ int main() {
 }
 
 void Dissassemble(int *bits){
-  //char opcode[];
-  //for(int )
+  char *opcode;
+  opcode = (char *) malloc(7 * sizeof(char));
+  opcode[6] = '\0';
+  int i;
+  for(i = 0; i < 6; ++i){
+      opcode[i] = (char) bits[i];
+  }
+  printf("\nOpcode: %s\n", opcode);
 }
 
 void HexToBinary(int *bits, unsigned int hex){
-    for(int i = 0; i < 32; ++i){
+    int i;
+    for(i = 0; i < 32; ++i){
         bits[i] = (hex >> i) & 1;
     }
 }
