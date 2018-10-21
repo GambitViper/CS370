@@ -49,7 +49,7 @@ void Dissassemble(int *bits){
   opcode[6] = '\0';
   int i;
   for(i = 0; i < 6; ++i){
-      opcode[i] = (char) bits[i];
+      opcode[i] = (char) bits[i] + 48;
   }
   printf("\nOpcode: %s\n", opcode);
 }
