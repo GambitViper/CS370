@@ -107,20 +107,37 @@ void Dissassemble(unsigned int encoded, statistics *stats){
   rd = GetHexValue(encoded, 15, 11);
   shamt = GetHexValue(encoded, 10, 6);
   funct = GetHexValue(encoded, 5, 0);
-  // imm = GetHexValue(bits, 16, 31, 16);
+  // 
   // addr = GetHexValue(bits, , 25, 26);
-  printf("\n\topcode--> %d\n", opcode);
-  printf("\n\trs--> %d\n", rs);
-  printf("\n\trt--> %d\n", rt);
-  printf("\n\trd--> %d\n", rd);
-  printf("\n\tshamt--> %d\n", shamt);
-  printf("\n\tfunct--> %d\n", funct);
-  // printf("\n\timm--> %d\n", imm);
-  // printf("\n\taddr--> %d\n", addr);
+  printf("\topcode--> %d\n", opcode);
+  printf("\trs--> %d\n", rs);
+  printf("\trt--> %d\n", rt);
+  printf("\trd--> %d\n", rd);
+  printf("\tshamt--> %d\n", shamt);
+  printf("\tfunct--> %d\n", funct);
+  
+  if(opcode == 0){
+    printf("r-type\n");
+    if((funct >= 0x20 && funct <= 0x24) || funct == 0x27 || (funct >= 0x2a && funct <= 0x2b)){
+      printf("\t~write -> R[%d], read -> R[%d] & R[%d]", rd, rs, rt);
+    }else if(funct == 0x0 || (funct >= 0x2 && funct <= 0x3)){
+      printf("\t~write -> R[%d], read -> R[%d]", rd, rt);
+    }else if(funct == 0x8){
+      printf("\twrite -> PC, read -> R[%d]", rs);
+    }
+  }else if(opcode <= 3){
+    printf("j-type\n");
+    addr = GetHexValue(encoded, 25, 0);
+    printf("\taddr--> %d\n", addr);
+
+  }else{
+    printf("i-type\n");
+    imm = GetHexValue(encoded, 15, 0);
+    printf("\timm--> %d\n", imm);
+  }
 }
 
 unsigned int GetHexValue(unsigned int encoded, int hi, int lo){
-  // printf("~~~GXV~~~\n");
   unsigned int range = (hi - lo + 1);
   if(range == 32) return encoded;
   unsigned int result = 0;
