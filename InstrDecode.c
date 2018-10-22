@@ -19,7 +19,11 @@ struct statistics{
 };
 typedef struct statistics statistics;
 void Dissassemble(unsigned int, statistics *);
+void PrintStatistics(statistics *);
 statistics * Statistics();
+
+// DEBUG bit
+int debug = 1;
 
 int main() {
 
@@ -29,43 +33,33 @@ int main() {
 
     statistics *stats;
     stats = Statistics();
-    // int *pc_bits;
-    // int *instr_bits;
-    int i, j;
 
     fp = fopen("trace.txt", "r");
     while (fscanf(fp, "%X %X", &pcaddr, &einstr) != EOF){
-        //PC address bits
-        printf("~~~~~PC~~~~");
-        printf("%X\n", pcaddr);
-        // pc_bits = (int *) malloc(32 * sizeof(int));
-        // if(pc_bits == NULL){
-        //   printf("pc_bits null\n");
-        // }
-        // HexToBinary(pc_bits, pcaddr);
-        // ReverseArray(pc_bits, 32);
 
-        // for(i = 0; i < 32; ++i){
-        //     printf("%d", pc_bits[i]);
-        // }
+        // PC address bits
+        if(debug == 1){
+          printf("~~~~~PC~~~~");
+          printf("%X\n", pcaddr);
+        }
 
-        //Instruction MIPS encoded bits
-        printf("~~~INSTR~~~");
-        printf("%X\n", einstr);
-        // instr_bits = (int *) malloc(32 * sizeof(int));
-        // if(instr_bits == NULL){
-        //   printf("inner_bits null\n");
-        // }
-        // HexToBinary(instr_bits, einstr);
-        // ReverseArray(instr_bits, 32);
-        //
-        // for(j = 0; j < 32; ++j){
-        //     printf("%d", instr_bits[j]);
-        // }
+        // Instruction MIPS encoded bits
+        if(debug == 1){
+          printf("~~~INSTR~~~");
+          printf("%X\n", einstr);
+        }
+
+        // Main function dissasembles instructions
+        // & Records to statistics struct
         Dissassemble(einstr, stats);
 
-        printf("\n");
+        if(debug == 1){
+          printf("\n");
+        }
     }
+
+    PrintStatistics(stats);
+
     free(stats);
     fclose(fp);
 
@@ -99,7 +93,6 @@ statistics * Statistics(){
 }
 
 void Dissassemble(unsigned int encoded, statistics *stats){
-  // printf("~~~DIS~~~\n");
   unsigned int opcode, rs, rt, rd, shamt, funct, imm, addr;
   opcode = GetHexValue(encoded, 31, 26);
   rs = GetHexValue(encoded, 25, 21);
@@ -107,33 +100,64 @@ void Dissassemble(unsigned int encoded, statistics *stats){
   rd = GetHexValue(encoded, 15, 11);
   shamt = GetHexValue(encoded, 10, 6);
   funct = GetHexValue(encoded, 5, 0);
-  // 
-  // addr = GetHexValue(bits, , 25, 26);
-  printf("\topcode--> %d\n", opcode);
-  printf("\trs--> %d\n", rs);
-  printf("\trt--> %d\n", rt);
-  printf("\trd--> %d\n", rd);
-  printf("\tshamt--> %d\n", shamt);
-  printf("\tfunct--> %d\n", funct);
+
+  if(debug == 1){
+    printf("\topcode--> %d\n", opcode);
+    printf("\trs--> %d\n", rs);
+    printf("\trt--> %d\n", rt);
+    printf("\trd--> %d\n", rd);
+    printf("\tshamt--> %d\n", shamt);
+    printf("\tfunct--> %d\n", funct);
+  }
+
+  stats->insts++;
   
   if(opcode == 0){
-    printf("r-type\n");
-    if((funct >= 0x20 && funct <= 0x24) || funct == 0x27 || (funct >= 0x2a && funct <= 0x2b)){
-      printf("\t~write -> R[%d], read -> R[%d] & R[%d]", rd, rs, rt);
+    // R-type Instructions
+    stats->rtype++;
+    if(debug == 1) printf("r-type\n");
+    if((funct >= 0x20 && funct <= 0x24) 
+        || funct == 0x27 
+        || (funct >= 0x2a && funct <= 0x2b)){
+      // R[rd] = R[rs] & R[rt]
+      if(debug == 1) printf("\tR[%d] = R[%d] & R[%d]", rd, rs, rt);
+      stats->regwrites[rd]++;
+      stats->regreads[rs]++;
+      stats->regreads[rt]++;
     }else if(funct == 0x0 || (funct >= 0x2 && funct <= 0x3)){
-      printf("\t~write -> R[%d], read -> R[%d]", rd, rt);
+      // R[rd] = R[rt]
+      if(debug == 1) printf("\tR[%d] = R[%d]", rd, rt);
+      stats->regwrites[rd]++;
+      stats->regreads[rt]++;
     }else if(funct == 0x8){
-      printf("\twrite -> PC, read -> R[%d]", rs);
+      // PC = R[rs]
+      if(debug == 1) printf("\tPC = R[%d]", rs);
+      stats->regreads[rs]++;
     }
   }else if(opcode <= 3){
-    printf("j-type\n");
+    // J-type Instructions
+    stats->jtype++;
     addr = GetHexValue(encoded, 25, 0);
-    printf("\taddr--> %d\n", addr);
-
+    if(debug == 1){
+      printf("j-type\n");
+      printf("\taddr--> %d\n", addr);
+    }
   }else{
-    printf("i-type\n");
+    // I-type Instructions
+    stats->itype++;
     imm = GetHexValue(encoded, 15, 0);
-    printf("\timm--> %d\n", imm);
+    if(debug == 1){
+      printf("i-type\n");
+      printf("\timm--> %d\n", imm);
+    }
+    if((funct >= 0xa && funct <= 0xd) 
+        || (funct >= 0x23 && funct <= 0x25) 
+        || (funct >= 0x8 && funct <= 0x9)){
+      // R[rt] = R[rs]
+      if(debug == 1) printf("\tR[%d] = R[%d] ...", rt, rs);
+      stats->regwrites[rt]++;
+      stats->regreads[rs]++;
+    }
   }
 }
 
@@ -145,4 +169,22 @@ unsigned int GetHexValue(unsigned int encoded, int hi, int lo){
   result = encoded & mask;
   result = result >> lo;
   return result;
+}
+
+void PrintStatistics(statistics *stats){
+  printf("\n~~~~~~~~~~~~~~~~~~~~~\n");
+  printf("insts: %d\n", stats->insts);
+  printf("r-type: %d\n", stats->rtype);
+  printf("i-type: %d\n", stats->itype);
+  printf("j-type: %d\n", stats->jtype);
+  printf("fwd-taken: %d\n", stats->fwdtaken);
+  printf("bkw-taken: %d\n", stats->bkwtaken);
+  printf("not-taken: %d\n", stats->nottaken);
+  printf("loads: %d\n", stats->loads);
+  printf("stores: %d\n", stats->stores);
+  printf("arith: %d\n", stats->arith);
+  int i;
+  for(i = 0; i < 32; ++i){
+    printf("reg-%d: %d %d\n", i, stats->regreads[i], stats->regwrites[i]);
+  }
 }
