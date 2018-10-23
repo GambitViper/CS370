@@ -25,11 +25,12 @@ void PrintStatistics(statistics *);
 statistics * Statistics();
 
 // DEBUG bit
-int debug = 1;
+int debug = 0;
 
 int main() {
 
     FILE *fp;
+    
     unsigned int pcaddr;
     unsigned int einstr;
 
@@ -215,29 +216,32 @@ unsigned int GetHexValue(unsigned int encoded, int hi, int lo){
 }
 
 void PrintStatistics(statistics *stats){
-  printf("\n~~~~~~~~~~~~~~~~~~~~~\n");
-  printf("insts: %d\n", stats->insts);
-  printf("r-type: %d\n", stats->rtype);
-  printf("i-type: %d\n", stats->itype);
-  printf("j-type: %d\n", stats->jtype);
+  FILE *out;
+  out = fopen("statistics.txt", "w");
+
+  fprintf(out, "insts: %d\n", stats->insts);
+  fprintf(out, "r-type: %d\n", stats->rtype);
+  fprintf(out, "i-type: %d\n", stats->itype);
+  fprintf(out, "j-type: %d\n", stats->jtype);
 
   double fwdpct = (double)stats->fwdtaken / stats->insts;
   double bkwpct = (double)stats->bkwtaken / stats->insts;
   double notpct = (double)stats->nottaken / stats->insts;
 
-  printf("fwd-taken: %lf\n", (fwdpct * 100));
-  printf("bkw-taken: %lf\n", (bkwpct * 100));
-  printf("not-taken: %lf\n", (notpct * 100));
+  fprintf(out, "fwd-taken: %lf\n", (fwdpct * 100));
+  fprintf(out, "bkw-taken: %lf\n", (bkwpct * 100));
+  fprintf(out, "not-taken: %lf\n", (notpct * 100));
 
   double lpct = (double)stats->loads / stats->insts;
   double spct = (double)stats->stores / stats->insts;
   double apct = (double)stats->arith / stats->insts;
 
-  printf("loads: %lf\n", (lpct * 100));
-  printf("stores: %lf\n", (spct * 100));
-  printf("arith: %lf\n", (apct * 100));
+  fprintf(out, "loads: %lf\n", (lpct * 100));
+  fprintf(out, "stores: %lf\n", (spct * 100));
+  fprintf(out, "arith: %lf\n", (apct * 100));
   int i;
   for(i = 0; i < 32; ++i){
-    printf("reg-%d: %d %d\n", i, stats->regreads[i], stats->regwrites[i]);
+    fprintf(out, "reg-%d: %d %d\n", i, stats->regreads[i], stats->regwrites[i]);
   }
+  fclose(out);
 }
