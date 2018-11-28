@@ -9,7 +9,7 @@ struct statistics{
     int wmisses;
     int wb;
     int wt;
-} statistics;
+};
 typedef struct statistics statistics;
 struct cache_set{
     int *valid;
@@ -18,10 +18,6 @@ struct cache_set{
     int blocktoreplace;
 };
 typedef struct cache_set cache_set;
-struct cache{
-    cache_set *sets;
-};
-typedef struct cache cache;
 void PrintStatistics(statistics *);
 statistics * Statistics();
 
@@ -32,15 +28,44 @@ int main() {
 
     FILE *fp;
 
+    int set_associativity;
+    int offsetbits;
+    int indexbits;
+    char *allocation_policy;
+    char *write_policy;
+
+
+    fp = fopen("parameters.txt", "r");
+    int i;
+    for(i = 0; i < 5; i++){
+        if(i == 0){
+            fscanf(fp, "%d", set_associativity);
+        }else if(i == 1){
+            fscanf(fp, "%d", offsetbits);
+        }else if(i == 2){
+            fscanf(fp, "%d", indexbits);
+        }else if(i == 3){
+            fscanf(fp, "%s", allocation_policy);
+        }else{
+            fscanf(fp, "%s", write_policy);
+        }
+    }
+
+    if(debug){
+        printf("set associativity: %d", set_associativity);
+        printf("offset bits: %d", offsetbits);
+        printf("index bits: %d", indexbits);
+        printf("allocation policy: %s", allocation_policy);
+        printf("write policy: %s", write_policy);
+    }
+
+    fclose(fp);
+
     statistics *stats;
     stats = Statistics();
 
-    fp = fopen("parameters.txt", "r");
-
-    PrintStatistics(stats);
-
-    free(stats);
-    fclose(fp);
+    // PrintStatistics(stats);
+    // free(stats);
 
     return 0;    
 }
