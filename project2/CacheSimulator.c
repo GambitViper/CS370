@@ -22,52 +22,52 @@ void PrintStatistics(statistics *);
 statistics * Statistics();
 
 //DEBUG bit
-int debug = 0;
+int debug = 1;
 
 int main() {
 
-    FILE *fp;
+    FILE *params_file;
 
     int set_associativity;
     int offsetbits;
     int indexbits;
-    char *allocation_policy;
-    char *write_policy;
+    char allocation_policy[4];
+    char write_policy[3];
 
+    params_file = fopen("parameters.txt", "r");
 
-    fp = fopen("parameters.txt", "r");
-    int i;
-    for(i = 0; i < 5; i++){
-        if(i == 0){
-            fscanf(fp, "%d", set_associativity);
-        }else if(i == 1){
-            fscanf(fp, "%d", offsetbits);
-        }else if(i == 2){
-            fscanf(fp, "%d", indexbits);
-        }else if(i == 3){
-            fscanf(fp, "%s", allocation_policy);
-        }else{
-            fscanf(fp, "%s", write_policy);
-        }
-    }
+    fscanf(params_file, "%d", &set_associativity);
+    fscanf(params_file, "%d", &offsetbits);
+    fscanf(params_file, "%d", &indexbits);
+    fscanf(params_file, "%3s", allocation_policy);
+    fscanf(params_file, "%2s", write_policy);
 
     if(debug){
-        printf("set associativity: %d", set_associativity);
-        printf("offset bits: %d", offsetbits);
-        printf("index bits: %d", indexbits);
-        printf("allocation policy: %s", allocation_policy);
-        printf("write policy: %s", write_policy);
+        printf("~~~Parameters Debug~~~\n");
+        printf("set associativity: %d\n", set_associativity);
+        printf("offset bits: %d\n", offsetbits);
+        printf("index bits: %d\n", indexbits);
+        printf("allocation policy: %s\n", allocation_policy);
+        printf("write policy: %s\n", write_policy);
     }
 
-    fclose(fp);
+    fclose(params_file);
 
     statistics *stats;
     stats = Statistics();
 
-    // PrintStatistics(stats);
-    // free(stats);
+    FILE *access_file;
 
-    return 0;    
+    access_file = fopen("accesses.txt", "r");
+    
+
+    return 0;
+
+    
+    
+
+    // PrintStatistics(stats);
+    // free(stats); 
 }
 
 statistics * Statistics(){
@@ -90,17 +90,17 @@ void PrintStatistics(statistics *stats){
     FILE *out;
     out = fopen("statistics.txt", "w");
 
-    fprintf(out, "rhits: %d\n", stats->rhits);
-    fprintf(out, "whits: %d\n", stats->whits);
-    fprintf(out, "rmisses: %d\n", stats->rmisses);
-    fprintf(out, "wmisses: %d\n", stats->wmisses);
+    paramsrintf(out, "rhits: %d\n", stats->rhits);
+    paramsrintf(out, "whits: %d\n", stats->whits);
+    paramsrintf(out, "rmisses: %d\n", stats->rmisses);
+    paramsrintf(out, "wmisses: %d\n", stats->wmisses);
 
     int total = stats->rhits + stats->whits + stats->rmisses + stats->wmisses;
     double hitrate = (double)(stats->rhits + stats->whits) / total;
 
-    fprintf(out, "hrate: %lf\n", (hitrate * 100));
-    fprintf(out, "wb: %d\n", stats->wb);
-    fprintf(out, "wt: %d\n", stats->wt);
+    paramsrintf(out, "hrate: %lf\n", (hitrate * 100));
+    paramsrintf(out, "wb: %d\n", stats->wb);
+    paramsrintf(out, "wt: %d\n", stats->wt);
 
     fclose(out);
 }
