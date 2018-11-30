@@ -191,7 +191,7 @@ void SimulateCache(cache_set **cache, statistics *stats, int ways, unsigned int 
 
 }
 
-cache_set * CacheSet(assoc){
+cache_set * CacheSet(int assoc){
   cache_set *newset = (cache_set *) malloc(sizeof(cache_set));
   if(newset == NULL){
     return NULL;
