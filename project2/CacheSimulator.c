@@ -100,8 +100,8 @@ int main() {
       if(debug){
         printf("read/write: %s\n", read_write);
         printf("memory addr: %x\n", mem_addr);
-        printf("\toffset--> %d\n", offset);
-        printf("\tindex--> %d\n", index);
+        printf("\toffset--> %x\n", offset);
+        printf("\tindex--> %x\n", index);
         printf("\ttag--> %x\n", tag);
       }
 
@@ -110,13 +110,15 @@ int main() {
       timetrack++;
     }
 
+    fclose(access_file);
+
+    PrintStatistics(stats);
+
+    free(stats);
+
     return 0;
 
 
-
-
-    // PrintStatistics(stats);
-    // free(stats);
 }
 
 void SimulateCache(cache_set **cache, statistics *stats, int ways, unsigned int offset, unsigned int index, unsigned int tag, int is_wa, int is_wt, int timetrack, int is_read){
@@ -125,31 +127,64 @@ void SimulateCache(cache_set **cache, statistics *stats, int ways, unsigned int 
   int way;
 
   for(way = 0; way < ways; way++){
-    curr_set = cache[way];
-    if(curr_set->valid[way] == 1 && curr_set->tag[way] == tag){
-      //hit
+    if(cache[index]->valid[way] == 1 && cache[index]->tag[way] == tag){
+      if(debug) printf("\t--hit\n");//hit
       if(is_read){
         stats->rhits++;
       }else{
         stats->whits++;
         if(is_wa){
-
+          cache[index]->blocktoreplace[way] = timetrack;
+        }
+        if(!is_wt && cache[index]->dirty[way] == 1){
+          stats->wb++;
         }
       }
+      return;
     }else {
       //non-hit but non-exhausted
-      if(lasttime > curr_set->blocktoreplace[way]){
-        lasttime = curr_set->blocktoreplace[way];
-        lastway = w;
+      if(lasttime > cache[index]->blocktoreplace[way]){
+        lasttime = cache[index]->blocktoreplace[way];
+        lastway = way;
       }
     }
   }
 
+  if(debug) printf("\t--miss\n");
+
   if(is_read){
+    //read miss
     stats->rmisses++;
+
+    if(debug) printf("index reading into: %x", lastway);
+    //update and add to cache hierarchy
+    cache[index]->valid[lastway] = 1;
+    if(!is_wt) cache[index]->dirty[lastway] = 1;
+    cache[index]->tag[lastway] = tag;
+    cache[index]->blocktoreplace[lastway] = timetrack;
+
   }else {
+    //write miss
     stats->wmisses++;
+
+    if(debug) printf("is_wa: %d\n", is_wa);
+
+    if(!is_wa){
+      stats->wt++;
+    }else{
+      //write allocation
+      if(!is_wt && cache[index]->dirty[lastway] == 1){
+        stats->wb++;
+      }
+      cache[index]->valid[lastway] = 1;
+      if(!is_wt) cache[index]->dirty[lastway] = 1;
+      cache[index]->tag[lastway] = tag;
+      cache[index]->blocktoreplace[lastway] = timetrack;
+    }
+
   }
+
+
 
 
 }
@@ -206,7 +241,7 @@ void PrintStatistics(statistics *stats){
     int total = stats->rhits + stats->whits + stats->rmisses + stats->wmisses;
     double hitrate = (double)(stats->rhits + stats->whits) / total;
 
-    fprintf(out, "hrate: %lf\n", (hitrate * 100));
+    fprintf(out, "hrate: %lf\n", hitrate);
     fprintf(out, "wb: %d\n", stats->wb);
     fprintf(out, "wt: %d\n", stats->wt);
 
