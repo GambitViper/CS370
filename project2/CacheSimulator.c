@@ -159,7 +159,6 @@ void SimulateCache(cache_set **cache, statistics *stats, int ways, unsigned int 
     if(debug) printf("index reading into: %x", lastway);
     //update and add to cache hierarchy
     cache[index]->valid[lastway] = 1;
-    if(!is_wt) cache[index]->dirty[lastway] = 1;
     cache[index]->tag[lastway] = tag;
     cache[index]->blocktoreplace[lastway] = timetrack;
 
@@ -174,10 +173,13 @@ void SimulateCache(cache_set **cache, statistics *stats, int ways, unsigned int 
     }else{
       //write allocation
       if(!is_wt && cache[index]->dirty[lastway] == 1){
+        if(debug) printf("!!!wb2");
         stats->wb++;
       }
+      if(!is_wt && cache[index]->valid[lastway] == 1){
+        cache[index]->dirty[lastway] = 1;
+      }
       cache[index]->valid[lastway] = 1;
-      if(!is_wt) cache[index]->dirty[lastway] = 1;
       cache[index]->tag[lastway] = tag;
       cache[index]->blocktoreplace[lastway] = timetrack;
     }
